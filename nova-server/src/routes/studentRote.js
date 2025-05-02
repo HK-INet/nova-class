@@ -1,6 +1,6 @@
 const Router = require('koa-router');
 const xlsx = require('node-xlsx');
-const Student = require('../models/Student');
+const User = require('../models/User');
 const upload = require('../middleware/upload');
 const resp = require('../utils/response');
 const codes = require('../constants/responseCode');
@@ -14,6 +14,10 @@ router.post(
     upload.single('file'), // 使用 multer 中间件处理文件上传
     async (ctx) => {
         try {
+            // TODO:清除mongodb数据库原先的内容
+            await User.deleteMany({});
+
+
             const fileBuffer = ctx.request.file; // 需配合 koa-body 或 koa-multer 处理 multipart
             const workSheets = xlsx.parse(fileBuffer.path);
             const rows = workSheets[0].data;
@@ -51,11 +55,12 @@ router.post(
                 const studentId = String(row[studentIdIndex] || '').trim();
 
                 return {
+                    uid: studentId,
                     studentId: studentId,
-                    name: name,
+                    name: studentId,
                     className: className,
                     nickname: name,
-                    password: '123456',
+                    password: '123456'
                 };
             });
 
@@ -65,7 +70,7 @@ router.post(
             // 1) 先根据学号去重
             const ids = students.map(s => s.studentId);
             // 2) 查出已存在的
-            const existing = await Student.find({
+            const existing = await User.find({
                 studentId: { $in: ids }
             }, 'studentId').lean();
 
@@ -83,7 +88,7 @@ router.post(
                 return;
             }
 
-            await Student.insertMany(students, { ordered: false, lean: true });
+            await User.insertMany(students, { ordered: false, lean: true });
 
             ctx.status = codes.SUCCESS;
             ctx.body = resp.success(
@@ -99,6 +104,16 @@ router.post(
         } catch (err) {
             ctx.status = codes.ERROR;
             ctx.body = resp.fail('导入异常', err.message);
+        } finally {
+            // 删除临时文件
+            if (ctx.request.file) {
+                const fs = require('fs');
+                fs.unlink(ctx.request.file.path, (err) => {
+                    if (err) {
+                        console.error('删除临时文件失败:', err);
+                    }
+                });
+            }
         }
     });
 

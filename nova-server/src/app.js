@@ -5,12 +5,11 @@ const Router = require('koa-router');
 
 const db = require('./config/db');
 
-// 引入路由模块
-const studentRoutes = require('./routes/student');
-
 const app = new Koa();
 const router = new Router();
 
+// 引入路由模块
+const studentRoutes = require('./routes/studentRote');
 
 // 全局中间件
 app.use(bodyParser());
