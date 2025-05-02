@@ -1,8 +1,9 @@
 const Router = require('koa-router');
 const xlsx = require('node-xlsx');
-const bcrypt = require('bcrypt');
 const Student = require('../models/Student');
 const upload = require('../middleware/upload');
+const resp = require('../utils/response');
+const codes = require('../constants/responseCode');
 
 
 const router = new Router();
@@ -17,6 +18,12 @@ router.post(
             const workSheets = xlsx.parse(fileBuffer.path);
             const rows = workSheets[0].data;
 
+            if (!ctx.request.file) {
+                ctx.status = codes.BAD_REQUEST;
+                ctx.body = resp.fail('未收到上传文件');
+                return;
+            }
+
             // 找到姓名、班级、学号的列索引
             const header = rows[0].map(c => String(c).trim());
             const nameIndex = header.indexOf('姓名');
@@ -24,8 +31,8 @@ router.post(
             const studentIdIndex = header.indexOf('学号');
 
             if (nameIndex === -1 || classIndex === -1 || studentIdIndex === -1) {
-                ctx.status = 400;
-                ctx.body = { error: '表格中缺少必要的列：姓名、班级或学号' };
+                ctx.status = codes.BAD_REQUEST;
+                ctx.body = resp.fail('表头缺少必要的列：姓名、班级、学号');
                 return;
             }
 
@@ -67,21 +74,31 @@ router.post(
             const toInsert = students.filter(s => !existingIds.has(s.studentId));
 
             if (toInsert.length === 0) {
-                ctx.status = 409;
-                ctx.body = { message: '没有新的学号可导入，全部学号已存在。' };
+                ctx.status = codes.SUCCESS;
+                ctx.body = resp.success('没有新的学号可导入，全部已存在', {
+                    insertedCount: 0,
+                    skippedCount: students.length,
+                    // duplicates: Array.from(existingIds)
+                });
                 return;
             }
 
-            await Student.insertMany(students);
-            ctx.body = {
-                message: '导入完成',
-                insertedCount: toInsert.length,
-                skippedCount: students.length - toInsert.length,
-                skippedIds: Array.from(existingIds)
-            };
+            await Student.insertMany(students, { ordered: false, lean: true });
+
+            ctx.status = codes.SUCCESS;
+            ctx.body = resp.success(
+                existingIds.size === 0
+                    ? '导入成功'
+                    : '部分导入成功，存在重复学号',
+                {
+                    insertedCount: toInsert.length,
+                    skippedCount: students.length - toInsert.length,
+                    duplicates: Array.from(existingIds)
+                }
+            );
         } catch (err) {
-            ctx.status = 500;
-            ctx.body = { error: err.message };
+            ctx.status = codes.ERROR;
+            ctx.body = resp.fail('导入异常', err.message);
         }
     });
 
