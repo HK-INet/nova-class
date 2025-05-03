@@ -12,7 +12,7 @@ const router = new Router();
 // POST /students/import  批量导入
 router.post(
     '/import',
-    auth(['admin', 'student']),
+    auth(['admin']),
     upload.single('file'), // 使用 multer 中间件处理文件上传
     async (ctx) => {
         try {
