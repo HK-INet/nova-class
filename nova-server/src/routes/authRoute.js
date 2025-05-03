@@ -2,7 +2,6 @@ const Router = require('koa-router');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { secret, expiresIn } = require('../config/jwt');
-const resp = require('../utils/response');
 
 const router = new Router();
 
@@ -10,22 +9,19 @@ const router = new Router();
 router.post('/login', async ctx => {
     const { name, password } = ctx.request.body;
     if (!name || !password) {
-        ctx.body = resp.fail('用户名和密码均为必填');
-        return;
+        return ctx.fail('用户名和密码均为必填');
     }
 
     // 查找用户
     const user = await User.findOne({ name });
     if (!user) {
-        ctx.body = resp.fail('用户不存在或密码错误');
-        return;
+        return ctx.fail('用户不存在或密码错误');
     }
 
     // 验证密码
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-        ctx.body = resp.fail('用户不存在或密码错误');
-        return;
+        return ctx.fail('用户不存在或密码错误');
     }
 
     // 签发 JWT
@@ -33,7 +29,7 @@ router.post('/login', async ctx => {
     const token = jwt.sign(payload, secret, { expiresIn });
 
     // 返回给前端
-    ctx.body = resp.success('登录成功', {
+    return ctx.success('登录成功', {
         token: token,
         expiresIn: expiresIn,
         user: {

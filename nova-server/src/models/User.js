@@ -23,4 +23,10 @@ const UserSchema = new mongoose.Schema({
     versionKey: false,
 });
 
+// 验证密码
+UserSchema.methods.comparePassword = async function (password) {
+    // 直接比较
+    return password === this.password;
+};
+
 module.exports = model('User', UserSchema);
