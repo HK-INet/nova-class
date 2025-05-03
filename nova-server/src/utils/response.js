@@ -2,10 +2,6 @@ const codes = require('../constants/responseCode');
 
 /**
  * 构造标准 API 响应
- * @param {number} code    状态码：200 表示成功，500 失败...
- * @param {string} message 描述信息
- * @param {object} data    成功时的数据载体
- * @param {string} error   失败时的错误详情
  */
 function build({ code, message, data = null, error = null }) {
     const res = { code, message };

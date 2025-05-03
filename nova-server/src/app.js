@@ -9,10 +9,14 @@ const router = new Router();
 const db = require('./config/db');
 const studentRoutes = require('./routes/studentRoute');
 const authRoutes = require('./routes/authRoute');
+const responseMW = require('./middleware/response');
 
 
 // 全局中间件
 app.use(bodyParser());
+
+// 响应中间件
+app.use(responseMW);
 
 // 挂载登录接口
 router.use('/auth', authRoutes.routes(), authRoutes.allowedMethods());
