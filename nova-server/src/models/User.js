@@ -29,4 +29,23 @@ UserSchema.methods.comparePassword = async function (password) {
     return password === this.password;
 };
 
+/**
+ * 只返回那些非空、非敏感的字段
+ */
+UserSchema.methods.getPublicFields = function () {
+    const obj = this.toObject({ getters: true, versionKey: false });
+    // 删除敏感/内部字段
+    delete obj.password;
+    delete obj._id;           // 如果你不想返回原始 _id
+    delete obj.__v;
+
+    // 只保留 value != null && value !== ''
+    return Object.entries(obj).reduce((acc, [key, val]) => {
+        if (val !== null && val !== undefined && val !== '') {
+            acc[key] = val;
+        }
+        return acc;
+    }, {});
+};
+
 module.exports = model('User', UserSchema);

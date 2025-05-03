@@ -32,11 +32,7 @@ router.post('/login', async ctx => {
     return ctx.success('登录成功', {
         token: token,
         expiresIn: expiresIn,
-        user: {
-            id: user._id,
-            name: user.name,
-            role: user.role
-        }
+        user: userinfo = user.getPublicFields(),
     });
 });
 
