@@ -4,6 +4,7 @@ const User = require('../models/User');
 const upload = require('../middleware/upload');
 const resp = require('../utils/response');
 const codes = require('../constants/responseCode');
+const auth = require('../middleware/auth');
 
 
 const router = new Router();
@@ -11,6 +12,7 @@ const router = new Router();
 // POST /students/import  批量导入
 router.post(
     '/import',
+    auth,
     upload.single('file'), // 使用 multer 中间件处理文件上传
     async (ctx) => {
         try {

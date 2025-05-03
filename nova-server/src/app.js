@@ -3,19 +3,24 @@ const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
 const Router = require('koa-router');
 
-const db = require('./config/db');
-
 const app = new Koa();
 const router = new Router();
 
-// 引入路由模块
-const studentRoutes = require('./routes/studentRote');
+const db = require('./config/db');
+const studentRoutes = require('./routes/studentRoute');
+const authRoutes = require('./routes/authRoute');
+
 
 // 全局中间件
 app.use(bodyParser());
 
-// 挂载路由
-router.use('/students', studentRoutes.routes());
+// 挂载登录接口
+router.use('/auth', authRoutes.routes(), authRoutes.allowedMethods());
+
+// 挂载学生接口
+router.use('/students', studentRoutes.routes(), studentRoutes.allowedMethods());
+
+// 应用路由
 app.use(router.routes()).use(router.allowedMethods());
 
 // 错误处理
