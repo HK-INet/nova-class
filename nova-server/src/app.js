@@ -11,6 +11,7 @@ const studentRoutes = require('./routes/studentRoute');
 const authRoutes = require('./routes/authRoute');
 const responseMW = require('./middleware/response');
 const jwtAuth = require('./middleware/jwtAuth');
+const chatRoutes = require('./routes/chatRoute');
 
 
 // 全局中间件
@@ -27,6 +28,9 @@ router.use('/auth', authRoutes.routes(), authRoutes.allowedMethods());
 
 // 挂载学生接口
 router.use('/students', studentRoutes.routes(), studentRoutes.allowedMethods());
+
+// 课堂会话接口
+router.use('/chat', chatRoutes.routes(), chatRoutes.allowedMethods());
 
 // 应用路由
 app.use(router.routes()).use(router.allowedMethods());

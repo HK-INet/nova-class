@@ -1,33 +1,38 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const ChatSessionSchema = new mongoose.Schema({
-  // 当前会话是否开启
-  isOpen: {
-    type: Boolean,
-    default: false,
-  },
-  // 会话开启时间
-  startedAt: {
-    type: Date,
-    default: Date.now,
-  },
-  // 会话关闭时间
-  endedAt: {
-    type: Date,
-  },
-  // 可拓展：哪个教师开启的
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  role: {
+// 记录一次“开”或“关”操作的时间点
+const segmentSchema = new Schema({
+  action: {
     type: String,
-    enum: ['admin', 'teacher', 'assistant', 'student'],
+    enum: ['start', 'stop'],
     required: true
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  versionKey: false,
 });
 
-module.exports = mongoose.model('ChatSession', ChatSessionSchema);
+const chatSessionSchema = new Schema({
+  teacherId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  // 用 YYYY‑MM‑DD 字符串标记是哪一天的课堂
+  date: {
+    type: String,
+    required: true
+  },
+  // 这一节课里所有“start/stop”操作
+  segments: [segmentSchema],
+  // 当前状态，open 表示正在互动，closed 表示已停止
+  status: {
+    type: String,
+    enum: ['open', 'closed'],
+    default: 'closed'
+  }
+});
+
+module.exports = mongoose.model('ChatSession', chatSessionSchema);
