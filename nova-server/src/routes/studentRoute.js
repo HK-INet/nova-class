@@ -1,22 +1,37 @@
 const Router = require('koa-router');
 const xlsx = require('node-xlsx');
 const User = require('../models/User');
-const upload = require('../middleware/upload');
 const resp = require('../utils/response');
 const codes = require('../constants/responseCode');
 const auth = require('../middleware/auth');
+const path = require('path');
 
+const { createUpload } = require('../middleware/upload');
 
 const router = new Router();
+
+// 配置一个专门用来接收 Excel 的 upload 实例
+const excelUpload = createUpload({
+    // 你可以指定一个单独目录，也可以复用默认
+    dest: path.resolve(__dirname, '../../uploads/studentsExcel'),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (/^application\/(vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|vnd\.ms-excel)$/.test(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('只允许上传 Excel 文件'));
+        }
+    }
+});
 
 // POST /students/import  批量导入
 router.post(
     '/import',
-    auth(['admin']),
-    upload.single('file'), // 使用 multer 中间件处理文件上传
+    auth(['admin', 'student']),
+    excelUpload.single('file'),
     async (ctx) => {
         try {
-            // TODO:清除mongodb数据库原先的内容
+            // TODO:后续不用清除mongodb数据库原先的内容，这里只是为了测试文件是否正常上传
             await User.deleteMany({});
 
 
@@ -107,7 +122,7 @@ router.post(
             ctx.status = codes.ERROR;
             ctx.body = resp.fail('导入异常', err.message);
         } finally {
-            // 删除临时文件
+            // TODO:后续不用删除临时文件，这里就是为了测试文件是否正常上传
             if (ctx.request.file) {
                 const fs = require('fs');
                 fs.unlink(ctx.request.file.path, (err) => {
