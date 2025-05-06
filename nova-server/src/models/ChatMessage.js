@@ -42,4 +42,18 @@ const chatMessageSchema = new Schema({
   deletedAt: Date
 });
 
+chatMessageSchema.methods.getPublicData = function () {
+  return {
+    id: this._id,
+    sessionId: this.sessionId,
+    senderId: this.senderId,
+    blocks: this.blocks,
+    createdAt: this.createdAt,
+    // isRetracted: this.isRetracted,
+    // retractedAt: this.retractedAt,
+    // isDeleted: this.isDeleted,
+    // deletedAt: this.deletedAt
+  };
+};
+
 module.exports = mongoose.model('ChatMessage', chatMessageSchema);

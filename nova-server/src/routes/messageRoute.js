@@ -3,6 +3,7 @@ const auth = require('../middleware/auth');
 const ChatMessage = require('../models/ChatMessage');
 const { createUpload } = require('../middleware/upload');
 const path = require('path');
+const ChatSession = require('../models/ChatSession');
 
 const router = new Router();
 
@@ -55,6 +56,18 @@ router.post(
     auth(['admin', 'teacher', 'student']),
     async (ctx) => {
         const { sessionId, blocks } = ctx.request.body;
+
+        try {
+            session = await ChatSession.findById(sessionId);
+        } catch (err) {
+            console.error(err);
+            return ctx.fail('会话不存在');
+        }
+        if (session.status !== 'open') {
+            return ctx.fail('会话未开启，无法发送消息');
+        }
+
+
         // 简单校验
         if (!sessionId || !Array.isArray(blocks) || !blocks.length) {
             return ctx.fail('参数不合法');
@@ -66,7 +79,7 @@ router.post(
             blocks
         });
         await msg.save();
-        return ctx.success('发送成功', msg);
+        return ctx.success('发送成功', msg.getPublicData());
     }
 );
 
