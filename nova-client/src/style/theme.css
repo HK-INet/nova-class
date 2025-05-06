@@ -1,0 +1,21 @@
+:root {
+    --bg: #f7f9fb;
+    --fg: #1e1e1e;
+    --primary: #3b82f6;
+    --accent: #facc15;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --scrollbar: #d1d5db;
+    --shadow: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='dark'] {
+    --bg: #1e1e1e;
+    --fg: #f7f9fb;
+    --primary: #60a5fa;
+    --accent: #fbbf24;
+    --card-bg: #2a2a2a;
+    --border-color: #444;
+    --scrollbar: #333;
+    --shadow: rgba(0, 0, 0, 0.5);
+}
