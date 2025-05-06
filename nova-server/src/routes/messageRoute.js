@@ -5,6 +5,7 @@ const { createUpload } = require('../middleware/upload');
 const path = require('path');
 const ChatSession = require('../models/ChatSession');
 const mongoose = require('mongoose');
+const { log } = require('console');
 
 const router = new Router();
 
@@ -183,4 +184,56 @@ router.get(
     }
 );
 
+/**
+ * POST /chat/message/retract
+ * 撤回消息
+ * body: {
+ *   messageId: String
+ * }
+ */
+router.post(
+    '/retract',
+    auth(['admin', 'teacher', 'student']),
+    async (ctx) => {
+        const { messageId } = ctx.request.body;
+
+        if (!messageId) {
+            return ctx.fail('参数不合法');
+        }
+
+        // 查找消息
+        let msg;
+        try {
+            msg = await ChatMessage.findById(messageId);
+        } catch (err) {
+            console.error(err);
+            return ctx.fail('消息不存在');
+        }
+        if (!msg) {
+            return ctx.fail('消息不存在');
+        }
+
+        // 只能撤回自己的消息
+        if (msg.senderId != ctx.state.user.id) {
+            console.log(`用户 ${ctx.state.user.id} 尝试撤回消息 ${msg.blocks}，但不是消息发送者`);
+            // console.log(`消息发送者 ID: ${msg.senderId}`);
+            // console.log(`当前用户 ID: ${ctx.state.user.id}`);
+
+            return ctx.fail('只能撤回自己的消息');
+        }
+        // 判断消息是否在可撤回时间内
+        const now = new Date();
+        const diff = now - msg.createdAt;
+        const diffMinutes = Math.floor(diff / (1000 * 60));
+        if (diffMinutes > 2) {
+            return ctx.fail('消息已超过 2 分钟，无法撤回');
+        }
+
+        // 撤回
+        msg.isRetracted = true;
+        await msg.save();
+
+        return ctx.success('撤回成功');
+    }
+);
 module.exports = router;
