@@ -17,6 +17,26 @@ const jwtAuth = require('./middleware/jwtAuth');
 const chatRoutes = require('./routes/chatRoute');
 const messageRoutes = require('./routes/messageRoute');
 
+
+// 全局异常处理
+app.use(async (ctx, next) => {
+    try {
+        await next();
+    } catch (err) {
+        // 可以给业务抛出的 Error 附带一个 status 或 code 属性：
+        const status = err.status || 500;
+        const code = err.code || status;
+        // 走你的统一失败返回
+        ctx.status = status;
+        ctx.body = { code, msg: err.message || '服务器内部错误' };
+        // 记录完整错误栈，方便排查
+        console.error('[全局异常]', err);
+        // 同时还是要 emit 错误，以便可能的上层监控
+        // ctx.app.emit('error', err, ctx);
+    }
+});
+
+
 // 全局中间件
 app.use(bodyParser());
 
