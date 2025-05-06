@@ -18,8 +18,9 @@ module.exports = async function jwtAuth(ctx, next) {
     }
 
     const token = parts[1];
+    let payload;
     try {
-        const payload = jwt.verify(token, secret);
+        payload = jwt.verify(token, secret);
         // console.log(payload);
 
         // payload 中应该包含用户 id 和角色等字段
@@ -31,10 +32,10 @@ module.exports = async function jwtAuth(ctx, next) {
         //      iat: 1746241556,
         //      exp: 1746500756
         // }
-        ctx.state.user = payload;
-        await next();
     } catch (err) {
         ctx.status = 401;
         ctx.body = { code: 401, msg: 'Token 验证失败：' + err.message };
     }
+    ctx.state.user = payload;
+    await next();
 };
