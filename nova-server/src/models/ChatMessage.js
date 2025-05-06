@@ -1,36 +1,45 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const ChatMessageSchema = new mongoose.Schema({
-  // 所属会话
-  sessionId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ChatSession',
-    required: true,
-  },
-  // 发送者——学生或教师
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  // 消息内容
-  content: {
+const blockSchema = new Schema({
+  type: {
     type: String,
-    required: true,
-    trim: true,
+    enum: ['text', 'code', 'image', 'video'],
+    required: true
   },
-  // 时间戳
-  sentAt: {
+  content: String,    // 用于 text / code
+  url: String         // 用于 image / video
+}, { _id: false });
+
+const chatMessageSchema = new Schema({
+  sessionId: {
+    type: Schema.Types.ObjectId,
+    ref: 'ChatSession',
+    required: true
+  },
+  senderId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  blocks: {
+    type: [blockSchema],
+    validate: blocks => blocks.length > 0
+  },
+  createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
-  // 删除标记（软删除）
+  isRetracted: {
+    type: Boolean,
+    default: false
+  },
+  retractedAt: Date,
   isDeleted: {
     type: Boolean,
-    default: false,
+    default: false
   },
-}, {
-  versionKey: false,
+  deletedAt: Date
 });
 
-module.exports = mongoose.model('ChatMessage', ChatMessageSchema);
+module.exports = mongoose.model('ChatMessage', chatMessageSchema);

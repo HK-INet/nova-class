@@ -7,3 +7,6 @@ node_modules/
 
 # nova-server 后端项目uploads目录
 uploads/
+
+package-lock.json
+nova-server/package-lock.json

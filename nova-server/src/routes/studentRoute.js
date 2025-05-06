@@ -123,7 +123,7 @@ router.post(
             ctx.body = resp.fail('导入异常', err.message);
         } finally {
             // TODO:后续不用删除临时文件，这里就是为了测试文件是否正常上传
-            if (ctx.request.file) {
+            if (!ctx.request.file) {
                 const fs = require('fs');
                 fs.unlink(ctx.request.file.path, (err) => {
                     if (err) {
