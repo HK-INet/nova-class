@@ -19,6 +19,7 @@ import GlobalTransition from '@/components/GlobalTransition.vue'
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
+  background: var(--bg);
 }
 .route {
   position: absolute;
