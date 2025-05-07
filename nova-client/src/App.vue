@@ -4,9 +4,11 @@ import GlobalTransition from '@/components/GlobalTransition.vue'
 
 <template>
   <GlobalTransition/>
-    <div>
-      <router-link to="/home">跳转到首页</router-link>
-      <router-link to="/login">跳转到登陆</router-link>
+    <div class="app-container">
+      <div class="route">
+        <router-link to="/home">跳转到首页</router-link>
+        <router-link to="/login">跳转到登陆</router-link>
+      </div>
       <router-view/>
     </div>
 </template>
@@ -17,5 +19,12 @@ import GlobalTransition from '@/components/GlobalTransition.vue'
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
+}
+.route {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  z-index: 9999;
 }
 </style>

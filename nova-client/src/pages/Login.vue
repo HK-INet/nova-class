@@ -5,7 +5,7 @@ const animated = ref(false)
 onMounted(() => {
   setTimeout(() => {
     animated.value = true
-  }, 300)
+  }, 500)
 })
 </script>
 

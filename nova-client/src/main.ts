@@ -28,7 +28,7 @@ theme.init()
 const transStore = useTransStore()
 
 router.beforeEach((to, from, next) => {
-    console.log('[路由守卫] beforeEach', to.fullPath)
+    // console.log('[路由守卫] beforeEach', to.fullPath)
     transStore.visible = true
     transStore.phase = 'exit'
     transStore.pendingNext = next
